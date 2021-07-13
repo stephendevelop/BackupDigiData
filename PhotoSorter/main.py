@@ -19,7 +19,8 @@ FOLDER_TO_INSPECT = 'E:\\'
 FOLDER_TO_INSPECT = 'E:\\els fotos 2019'
 FOLDER_TO_INSPECT = 'E:\\VanComputerMoeke'
 FOLDER_TO_INSPECT = 'E:\\PhotosMoviesBackup\\Photos\\2017\\1'
-
+FOLDER_TO_INSPECT = 'E:\\PhotosMoviesBackup\\Photos\\2017\\1'
+FOLDER_TO_INSPECT = 'D:\\GoogleBackup\working\\takeout-20210712T205043Z-001\\Takeout\\Google Foto_s\\Kids'
 
 def print_hi(name):
     # Use a breakpoint in the code line below to debug your script.
@@ -46,6 +47,12 @@ class MyFileHandler:
             print("Already existing foler [%s], not creating again" % self.targetFolder)
 
 
+    def getmtime(self,theFile):
+        theJsonFromGoogle = "%s.json" % str(theFile)
+        if os.path.isfile(theJsonFromGoogle):
+            print("Found googlejson ... gonna parse")
+        return datetime.datetime.fromtimestamp(os.path.getmtime(theFile))
+
     def handleFile(self, theFile):
 
         matched = False
@@ -54,7 +61,7 @@ class MyFileHandler:
 
                 matched = True
                 print("the file [%s] passed the regex [%s]" % (theFile, regex))
-                mtime = datetime.datetime.fromtimestamp(os.path.getmtime(theFile))
+                mtime = self.getmtime(theFile)
                 print("year [%s] month [%s] day [%s]" % (mtime.year,mtime.month,mtime.day))
 
                 ltargetFolder = os.path.join(self.targetFolder,str(mtime.year))
@@ -81,7 +88,7 @@ class MyFileHandler:
                     self.handled.append(theFile)
 
         if not matched:
-            print("the file [%s] did pass any regex for the handler named [%s]" % (theFile, self.name))
+            print("the file [%s] did not pass any regex for the handler named [%s]" % (theFile, self.name))
             self.unhandledFiles.append(theFile)
 
 
@@ -128,6 +135,8 @@ def writeOutResults(photoHandler):
     print("Saving to [%s]" % targetFile)
     writeListOut(targetFile, photoHandler.handled)
 
+    return "x"
+
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -141,5 +150,5 @@ if __name__ == '__main__':
         photoHandler.createNonExistingFolder()
 
     [photoHandler.handleFile(theFile) for photoHandler in myPhotoHandlers for theFile in  glob.glob(FOLDER_TO_INSPECT + '\\**\\*.*', recursive=True)]
-    map(writeOutResults(photoHandler), myPhotoHandlers)
+    list(map(writeOutResults, myPhotoHandlers))
 
