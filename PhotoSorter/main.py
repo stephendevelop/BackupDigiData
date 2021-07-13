@@ -9,6 +9,7 @@ import re
 import datetime
 from shutil import copy2
 import filecmp
+import json
 import time
 from itertools import product
 
@@ -51,6 +52,13 @@ class MyFileHandler:
         theJsonFromGoogle = "%s.json" % str(theFile)
         if os.path.isfile(theJsonFromGoogle):
             print("Found googlejson ... gonna parse")
+            with open(theJsonFromGoogle) as fileFromJson:
+                jsonfromgoogle = json.load(fileFromJson)
+                print(jsonfromgoogle['creationTime']['timestamp'])
+                theTimeFromJsonGoogle = datetime.datetime.fromtimestamp( int(jsonfromgoogle['creationTime']['timestamp'] ))
+                print(theTimeFromJsonGoogle)
+                return theTimeFromJsonGoogle
+
         return datetime.datetime.fromtimestamp(os.path.getmtime(theFile))
 
     def handleFile(self, theFile):
@@ -63,6 +71,7 @@ class MyFileHandler:
                 print("the file [%s] passed the regex [%s]" % (theFile, regex))
                 mtime = self.getmtime(theFile)
                 print("year [%s] month [%s] day [%s]" % (mtime.year,mtime.month,mtime.day))
+
 
                 ltargetFolder = os.path.join(self.targetFolder,str(mtime.year))
                 ltargetFolder = os.path.join(ltargetFolder,str(mtime.month))
@@ -95,19 +104,19 @@ class MyFileHandler:
 
 def createHandlers():
     myPhotosFileHandler = MyFileHandler('photos','D:\\PhotosMoviesBackup\\Photos')
-    myPhotosFileHandler.regexs.append(".*.tif")
-    myPhotosFileHandler.regexs.append(".*.tiff")
-    myPhotosFileHandler.regexs.append(".*.png")
-    myPhotosFileHandler.regexs.append(".*.jpg")
-    myPhotosFileHandler.regexs.append(".*.jpeg")
-    myPhotosFileHandler.regexs.append(".*.raw")
-    myPhotosFileHandler.regexs.append(".*.gif")
-    myPhotosFileHandler.regexs.append(".*.bmp")
+    myPhotosFileHandler.regexs.append(".*.tif$")
+    myPhotosFileHandler.regexs.append(".*.tiff$")
+    myPhotosFileHandler.regexs.append(".*.png$")
+    myPhotosFileHandler.regexs.append(".*.jpg$")
+    myPhotosFileHandler.regexs.append(".*.jpeg$")
+    myPhotosFileHandler.regexs.append(".*.raw$")
+    myPhotosFileHandler.regexs.append(".*.gif$")
+    myPhotosFileHandler.regexs.append(".*.bmp$")
 
     myPhotosFileHandler2 = MyFileHandler('movies','D:\\PhotosMoviesBackup\\Movies')
-    myPhotosFileHandler2.regexs.append(".*.mp4")
-    myPhotosFileHandler2.regexs.append(".*.mpg")
-    myPhotosFileHandler2.regexs.append(".*.avi")
+    myPhotosFileHandler2.regexs.append(".*.mp4$")
+    myPhotosFileHandler2.regexs.append(".*.mpg$")
+    myPhotosFileHandler2.regexs.append(".*.avi$")
 
     return [myPhotosFileHandler,myPhotosFileHandler2]
 
