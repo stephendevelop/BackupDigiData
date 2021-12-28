@@ -22,6 +22,7 @@ FOLDER_TO_INSPECT = 'E:\\VanComputerMoeke'
 FOLDER_TO_INSPECT = 'E:\\PhotosMoviesBackup\\Photos\\2017\\1'
 FOLDER_TO_INSPECT = 'E:\\PhotosMoviesBackup\\Photos\\2017\\1'
 FOLDER_TO_INSPECT = 'D:\\GoogleBackup\working\\takeout-20210712T205043Z-001\\Takeout\\Google Foto_s\\Kids'
+FOLDER_TO_INSPECT = 'D:\\GoogleBackup\working\Camera'
 
 def print_hi(name):
     # Use a breakpoint in the code line below to debug your script.
