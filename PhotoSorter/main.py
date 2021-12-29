@@ -28,6 +28,7 @@ FOLDER_TO_INSPECT = 'D:\\GoogleBackup\working\Camera'
 FOLDER_TO_INSPECT = 'D:\\GoogleBackup\\28122021\\Kids'
 FOLDER_TO_INSPECT = 'F:\\'
 FOLDER_TO_INSPECT = 'F:\\els fotos 2019'
+FOLDER_TO_INSPECT = 'D:\\PhotosMoviesBackup\\Photos'
 
 
 
@@ -114,7 +115,7 @@ class MyFileHandler:
                 match = re.search("(20[0-2][0-9][0-1][0-9][0-2][0-9])", theFile)
                 filenameDate = None
                 if match is not None:
-                    filenameDate = datetime.strptime(match.group(), '%Y%m%d').date()
+                    filenameDate = datetime.strptime(match.group(), '%Y%m%d')
                     print("Filenamedate [%s] " % str(filenameDate))
 
                 ######################################
@@ -147,18 +148,32 @@ class MyFileHandler:
                 '''
 
                 if filenameDate is not None:        
-                    if ((int((filenameDate - mtime).total_seconds() / 3600 ))*-1) <= 2 :
+                    if (mtime is not None) and ((int((filenameDate - mtime).total_seconds() / 3600 ))*-1) <= 2 :
                         workDateTime = mtime
-                    elif ((int((filenameDate - exifDateTime).total_seconds() / 3600 ))*-1) <= 2:
+                    elif (exifDateTime is not None) and ((int((filenameDate - exifDateTime).total_seconds() / 3600 ))*-1) <= 2:
                         workDateTime = exifDateTime
                     else:
-                        msg =  "%s -> !!! exifDateTime differs => exifdatetime[%s]  mtime[%s] filenamedate[%s]" % (str(theFile),str(exifDateTime),str(mtime),str(filenameDate))   
+                        msg =  "%s -> !!! filenamedate found, but to far from exif and mtime !!! exifdatetime[%s]  mtime[%s] filenamedate[%s]" % (str(theFile),str(exifDateTime),str(mtime),str(filenameDate))   
                         self.offtime.append(msg)  
                         continue
                 else:
-                    msg =  "%s -> !!! No filenamedate exifdatetime[%s]  mtime[%s] filenamedate[%s]" % (str(theFile),str(exifDateTime),str(mtime),str(filenameDate))   
+                    if (mtime is not None) and (exifDateTime is not None):
+                        timeDeltaHours = (int((exifDateTime - mtime).total_seconds() / 3600))*-1 
+                        if timeDeltaHours > 48:
+                            msg =  "%s -> !!! exifDateTime vs mtime differs too much => exifdatetime[%s]  mtime[%s] filenamedate[%s]" % (str(theFile),str(exifDateTime),str(mtime),str(filenameDate))   
+                            self.offtime.append(msg)  
+                            continue
+                        else:
+                            #Exif always has priority over mtime, because mtime is time when saved
+                            workDateTime = exifDateTime
+                    elif mtime is None:
+                        workDateTime = exifDateTime
+                    elif exifDateTime is None:
+                        workDateTime = mtime
+                    else:
+                        msg =  "%s -> !!! no date found !!! exifdatetime[%s]  mtime[%s] filenamedate[%s]" % (str(theFile),str(exifDateTime),str(mtime),str(filenameDate))   
                         self.offtime.append(msg)  
-                        continue
+                        continue               
 
 
                 mtime = workDateTime
