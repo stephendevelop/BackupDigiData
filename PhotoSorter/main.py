@@ -85,6 +85,7 @@ class MyFileHandler:
         self.duplicates = []
         self.handled = []
         self.offtime = []
+        self.warnings = []
 
     def createNonExistingFolder(self):
         if not os.path.isdir(self.targetFolder):
@@ -147,33 +148,34 @@ class MyFileHandler:
                         continue
                 '''
 
-                if filenameDate is not None:        
-                    if (mtime is not None) and ((int((filenameDate - mtime).total_seconds() / 3600 ))*-1) <= 2 :
-                        workDateTime = mtime
-                    elif (exifDateTime is not None) and ((int((filenameDate - exifDateTime).total_seconds() / 3600 ))*-1) <= 2:
+                if filenameDate is not None:   
+                    if (exifDateTime is None):
+                        workDateTime = filenameDate
+                    elif (exifDateTime is not None) and ((int((filenameDate - exifDateTime).total_seconds() / 3600 ))*-1) <= 25:
                         workDateTime = exifDateTime
                     else:
-                        msg =  "%s -> !!! filenamedate found, but to far from exif and mtime !!! exifdatetime[%s]  mtime[%s] filenamedate[%s]" % (str(theFile),str(exifDateTime),str(mtime),str(filenameDate))   
+                        msg =  "%s -> !!! filenamedate found, but exifdate too much off !!! exifdatetime[%s]  mtime[%s] filenamedate[%s]" % (str(theFile),str(exifDateTime),str(mtime),str(filenameDate))   
                         self.offtime.append(msg)  
-                        continue
+                        continue                                                                    
                 else:
                     if (mtime is not None) and (exifDateTime is not None):
                         timeDeltaHours = (int((exifDateTime - mtime).total_seconds() / 3600))*-1 
                         if timeDeltaHours > 48:
-                            msg =  "%s -> !!! exifDateTime vs mtime differs too much => exifdatetime[%s]  mtime[%s] filenamedate[%s]" % (str(theFile),str(exifDateTime),str(mtime),str(filenameDate))   
-                            self.offtime.append(msg)  
-                            continue
-                        else:
-                            #Exif always has priority over mtime, because mtime is time when saved
-                            workDateTime = exifDateTime
+                            msg =  "%s -> !!! using exifdatetime, exifDateTime vs mtime differs very much => exifdatetime[%s]  mtime[%s] filenamedate[%s]" % (str(theFile),str(exifDateTime),str(mtime),str(filenameDate))   
+                            self.warnings.append(msg)                             
+                        #Exif always has priority over mtime, because mtime is time when saved
+                        workDateTime = exifDateTime
+                    elif mtime is None and exifDateTime is None:
+                        msg =  "%s -> !!! no date found !!! exifdatetime[%s]  mtime[%s] filenamedate[%s]" % (str(theFile),str(exifDateTime),str(mtime),str(filenameDate))   
+                        self.offtime.append(msg)  
+                        continue   
                     elif mtime is None:
                         workDateTime = exifDateTime
                     elif exifDateTime is None:
                         workDateTime = mtime
                     else:
-                        msg =  "%s -> !!! no date found !!! exifdatetime[%s]  mtime[%s] filenamedate[%s]" % (str(theFile),str(exifDateTime),str(mtime),str(filenameDate))   
-                        self.offtime.append(msg)  
-                        continue               
+                        raise Exception("Should never get here!!!!!!!!!!!!!!!!!!!")
+                                    
 
 
                 mtime = workDateTime
@@ -194,8 +196,7 @@ class MyFileHandler:
                 if os.path.isfile(targetFile):
                     if filecmp.cmp(targetFile,theFile):
                         print("Found already same destination file [%s] [%s]" % (theFile, targetFile))
-                        self.duplicates.append(theFile)
-                
+                        self.duplicates.append(theFile)                
                     else:
                         self.unhandledFiles.append("CAUTION:::::: Same filename, different content, no copy taken => sourcefile[%s] targetfile [%s]" % (str(theFile),str(targetFile) ))                        
                 else:
@@ -211,7 +212,7 @@ class MyFileHandler:
 
 
 def createHandlers():
-    myPhotosFileHandler = MyFileHandler('photos','D:\\PhotosMoviesBackup\\TEMP\\Photos')
+    myPhotosFileHandler = MyFileHandler('photos','C:\\TEMPFotos')
     myPhotosFileHandler.regexs.append(".*.tif$")
     myPhotosFileHandler.regexs.append(".*.tiff$")
     myPhotosFileHandler.regexs.append(".*.png$")
@@ -221,7 +222,7 @@ def createHandlers():
     myPhotosFileHandler.regexs.append(".*.gif$")
     myPhotosFileHandler.regexs.append(".*.bmp$")
 
-    myPhotosFileHandler2 = MyFileHandler('movies','D:\\PhotosMoviesBackup\\TEMP\\Movies')
+    myPhotosFileHandler2 = MyFileHandler('movies','C:\\TEMPMovies')
     myPhotosFileHandler2.regexs.append(".*.mp4$")
     myPhotosFileHandler2.regexs.append(".*.mpg$")
     myPhotosFileHandler2.regexs.append(".*.avi$")
@@ -253,6 +254,10 @@ def writeOutResults(photoHandler):
     targetFile = createTargetFileName(photoHandler, '%s_copied.txt' % str(d1))
     print("Saving copied to [%s]" % targetFile)
     writeListOut(targetFile, photoHandler.handled)
+
+    targetFile = createTargetFileName(photoHandler, '%s_warnings.txt' % str(d1))
+    print("Saving warnings to [%s]" % targetFile)
+    writeListOut(targetFile, photoHandler.warnings)
 
     targetFile = createTargetFileName(photoHandler, '%s_offtime.txt' % str(d1))
     print("Saving offtime to [%s]" % targetFile)
