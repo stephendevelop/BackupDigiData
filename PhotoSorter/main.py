@@ -28,7 +28,7 @@ FOLDER_TO_INSPECT = 'D:\\GoogleBackup\working\Camera'
 FOLDER_TO_INSPECT = 'D:\\GoogleBackup\\28122021\\Kids'
 FOLDER_TO_INSPECT = 'F:\\'
 FOLDER_TO_INSPECT = 'F:\\els fotos 2019'
-FOLDER_TO_INSPECT = 'D:\\PhotosMoviesBackup\\Photos'
+FOLDER_TO_INSPECT = 'D:\\PhotosMoviesBackup\\Movies'
 
 
 
@@ -170,8 +170,10 @@ class MyFileHandler:
                         self.offtime.append(msg)  
                         continue   
                     elif mtime is None:
+                        print("No filenamedate, no mtime, using exif [%s]" % str(exifDateTime))
                         workDateTime = exifDateTime
                     elif exifDateTime is None:
+                        print("No filenamedate, no exifDateTime, using mtime [%s]" % str(mtime))
                         workDateTime = mtime
                     else:
                         raise Exception("Should never get here!!!!!!!!!!!!!!!!!!!")
@@ -227,7 +229,7 @@ def createHandlers():
     myPhotosFileHandler2.regexs.append(".*.mpg$")
     myPhotosFileHandler2.regexs.append(".*.avi$")
 
-    return [myPhotosFileHandler,myPhotosFileHandler2]
+    return [myPhotosFileHandler2,myPhotosFileHandler]
 
 
 def writeListOut(inTargetFile, inList):
