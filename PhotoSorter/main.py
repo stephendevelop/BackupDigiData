@@ -31,11 +31,10 @@ FOLDER_TO_INSPECT = 'F:\\els fotos 2019'
 FOLDER_TO_INSPECT = 'D:\\PhotosMoviesBackup\\Movies'
 
 
-
-
 def print_hi(name):
     # Use a breakpoint in the code line below to debug your script.
     print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+
 
 def getmtime(theFile):
         theJsonFromGoogle = "%s.json" % str(theFile)
@@ -103,7 +102,7 @@ class MyFileHandler:
         matched = False
         msg = None
         for regex in self.regexs:            
-            if ( not matched ) and re.match(regex, theFile.lower()):
+            if (not matched) and re.match(regex, theFile.lower()):
 
                 matched = True
                 print("the file [%s] passed the regex [%s]" % (theFile, regex))
@@ -208,13 +207,13 @@ class MyFileHandler:
 
         if not matched:
             print("the file [%s] did not pass any regex for the handler named [%s]" % (theFile, self.name))
-            self.unhandledFiles.append(theFile)
+            self.unhandledFiles.append("Not pass reex [%s]" % str(theFile))
         #time.sleep(2)
 
 
 
 def createHandlers():
-    myPhotosFileHandler = MyFileHandler('photos','C:\\TEMPFotos')
+    myPhotosFileHandler = MyFileHandler('photos', 'C:\\TEMPFotos')
     myPhotosFileHandler.regexs.append(".*.tif$")
     myPhotosFileHandler.regexs.append(".*.tiff$")
     myPhotosFileHandler.regexs.append(".*.png$")
@@ -224,7 +223,7 @@ def createHandlers():
     myPhotosFileHandler.regexs.append(".*.gif$")
     myPhotosFileHandler.regexs.append(".*.bmp$")
 
-    myPhotosFileHandler2 = MyFileHandler('movies','C:\\TEMPMovies')
+    myPhotosFileHandler2 = MyFileHandler('movies', 'C:\\TEMPMovies')
     myPhotosFileHandler2.regexs.append(".*.mp4$")
     myPhotosFileHandler2.regexs.append(".*.mpg$")
     myPhotosFileHandler2.regexs.append(".*.avi$")
