@@ -37,7 +37,7 @@ def print_hi(name):
     print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
 
 
-def getmtime(theFile):
+def getGoogleJsonTime(theFile):
         theJsonFromGoogle = "%s.json" % str(theFile)
         if os.path.isfile(theJsonFromGoogle):
             print("Found googlejson ... gonna parse")
@@ -47,9 +47,11 @@ def getmtime(theFile):
                 theTimeFromJsonGoogle = datetime.fromtimestamp( int(jsonfromgoogle['creationTime']['timestamp'] ))
                 print(theTimeFromJsonGoogle)
                 return theTimeFromJsonGoogle
+        '''
         else:
             print("Did not find googlejson ... gonna use timestamp of file")            
             return datetime.fromtimestamp(os.path.getmtime(theFile))
+        '''
 
 def getImageDateTimeOutOfExif(fn):
     std_fmt = '%Y:%m:%d %H:%M:%S.%f'
@@ -113,16 +115,26 @@ class MyFileHandler:
                 ######################################
                 # GetFileNameDate
                 ######################################
-                match = re.search("(20[0-2][0-9][0-1][0-9][0-2][0-9])", theFile)
+                match = re.search("(20[0-2][0-9][0-1][0-9][0-3][0-9])", theFile)
                 filenameDate = None
                 if match is not None:
+                    print("Found group [%s]" % match.group())
                     filenameDate = datetime.strptime(match.group(), '%Y%m%d')
                     print("Filenamedate [%s] " % str(filenameDate))
+                else:
+                    match = re.search("(20[0-2][0-9]-[0-1][0-9]-[0-3][0-9])", theFile)
+                    if match is not None:
+                        print("Found group [%s]" % match.group())
+                        filenameDate = datetime.strptime(match.group(), '%Y-%m-%d')
+                        print("Filenamedate [%s] " % str(filenameDate))
+
+                    else:
+                        print("No filenamedate for [%s]" % theFile)
 
                 ######################################
-                #Get Mtime from file
+                #Get Google json time
                 ######################################
-                mtime = getmtime(theFile)
+                googleJsonTime = getGoogleJsonTime(theFile)
 
                 ######################################
                 #GetExifDateTime
@@ -134,59 +146,51 @@ class MyFileHandler:
                     print("error during exif [%s]" % str(e))
 
 
-                
-
-                '''
-                if exifDateTime is not None:
-                    print("mtime [%s] exifdatetime [%s]" % ( str(mtime), str(exifDateTime) ))
-                    timeDelta = (int((exifDateTime - mtime).total_seconds() / 3600))*-1
-                    print("TimeDelta [%s]" % str(timeDelta))
-                    if timeDelta >24:
-                        msg =  "%s -> !!! exifDateTime differs => exifdatetime[%s]  mtime[%s]" % (str(theFile),str(exifDateTime),str(mtime))   
-                        self.offtime.append(msg)                     
-                        print(msg)
-                        continue
-                '''
-
                 if filenameDate is not None:   
                     if (exifDateTime is None):
                         workDateTime = filenameDate
                     elif (exifDateTime is not None) and ((int((filenameDate - exifDateTime).total_seconds() / 3600 ))*-1) <= 25:
                         workDateTime = exifDateTime
                     else:
-                        msg =  "%s -> !!! filenamedate found, but exifdate too much off !!! exifdatetime[%s]  mtime[%s] filenamedate[%s]" % (str(theFile),str(exifDateTime),str(mtime),str(filenameDate))   
+                        msg =  "%s -> !!! filenamedate found, but exifdate too much off !!! exifdatetime[%s]  googleJsonTime[%s] filenamedate[%s]" % (str(theFile),str(exifDateTime),str(googleJsonTime),str(filenameDate))
+                        print(msg)
                         self.offtime.append(msg)  
-                        continue                                                                    
+                        continue
                 else:
-                    if (mtime is not None) and (exifDateTime is not None):
-                        timeDeltaHours = (int((exifDateTime - mtime).total_seconds() / 3600))*-1 
-                        if timeDeltaHours > 48:
-                            msg =  "%s -> !!! using exifdatetime, exifDateTime vs mtime differs very much => exifdatetime[%s]  mtime[%s] filenamedate[%s]" % (str(theFile),str(exifDateTime),str(mtime),str(filenameDate))   
-                            self.warnings.append(msg)                             
-                        #Exif always has priority over mtime, because mtime is time when saved
-                        workDateTime = exifDateTime
-                    elif mtime is None and exifDateTime is None:
-                        msg =  "%s -> !!! no date found !!! exifdatetime[%s]  mtime[%s] filenamedate[%s]" % (str(theFile),str(exifDateTime),str(mtime),str(filenameDate))   
-                        self.offtime.append(msg)  
-                        continue   
-                    elif mtime is None:
-                        print("No filenamedate, no mtime, using exif [%s]" % str(exifDateTime))
-                        workDateTime = exifDateTime
-                    elif exifDateTime is None:
-                        print("No filenamedate, no exifDateTime, using mtime [%s]" % str(mtime))
-                        workDateTime = mtime
-                    else:
+                    if googleJsonTime is None and exifDateTime is None:
                         raise Exception("Should never get here!!!!!!!!!!!!!!!!!!!")
+                    else:
+                        if (googleJsonTime is not None) and (exifDateTime is not None):
+                            timeDeltaHours = (int((exifDateTime - googleJsonTime).total_seconds() / 3600))*-1
+                            if timeDeltaHours > 48:
+                                msg =  "%s -> !!! using exifdatetime, exifDateTime vs workDateTime differs very much => exifdatetime[%s]  googleJsonTime[%s] filenamedate[%s]" % (str(theFile),str(exifDateTime),str(googleJsonTime),str(filenameDate))
+                                self.warnings.append(msg)
+                            #Exif always has priority over workDateTime, because workDateTime is time when saved
+                            workDateTime = exifDateTime
+                        elif googleJsonTime is None and exifDateTime is None:
+                            msg =  "%s -> !!! no date found !!! exifdatetime[%s]  googleJsonTime[%s] filenamedate[%s]" % (str(theFile),str(exifDateTime),str(googleJsonTime),str(filenameDate))
+                            print(msg)
+                            self.offtime.append(msg)
+                            continue
+                        elif googleJsonTime is None:
+                            print("No filenamedate, no googleJsonTime, using exif [%s]" % str(exifDateTime))
+                            workDateTime = exifDateTime
+                        elif exifDateTime is None:
+                            print("No filenamedate, no exifDateTime, using googleJsonTime [%s]" % str(googleJsonTime))
+                            workDateTime = googleJsonTime
+                        else:
+                            raise Exception("Should never get here!!!!!!!!!!!!!!!!!!!")
                                     
 
+                if workDateTime is None:
+                    raise Exception("Should never get here!!!!!!!!!!!!!!!!!!!")
 
-                mtime = workDateTime
 
-                print("Gonna handle file with year [%s] month [%s] day [%s]" % (mtime.year,mtime.month,mtime.day))
+                print("Gonna handle file with year [%s] month [%s] day [%s]" % (workDateTime.year,workDateTime.month,workDateTime.day))
 
-                ltargetFolder = os.path.join(self.targetFolder,str(mtime.year))
-                ltargetFolder = os.path.join(ltargetFolder,str(mtime.month))
-                ltargetFolder = os.path.join(ltargetFolder,str(mtime.day))
+                ltargetFolder = os.path.join(self.targetFolder,str(workDateTime.year))
+                ltargetFolder = os.path.join(ltargetFolder,str(workDateTime.month))
+                ltargetFolder = os.path.join(ltargetFolder,str(workDateTime.day))
                 print("Targetfolder [%s]" % str(ltargetFolder))
 
                 if not os.path.isdir(ltargetFolder):
