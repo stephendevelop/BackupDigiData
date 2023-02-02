@@ -29,7 +29,7 @@ FOLDER_TO_INSPECT = 'D:\\GoogleBackup\\28122021\\Kids'
 FOLDER_TO_INSPECT = 'F:\\'
 FOLDER_TO_INSPECT = 'F:\\els fotos 2019'
 FOLDER_TO_INSPECT = 'D:\\PhotosMoviesBackup\\Movies'
-FOLDER_TO_INSPECT = 'D:\\GoogleBackup\\WorkFolder\\Kids'
+FOLDER_TO_INSPECT = 'D:\\GoogleBackup\\WorkFolder\\Kids_01022023'
 
 
 def print_hi(name):
