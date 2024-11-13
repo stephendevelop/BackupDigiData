@@ -31,7 +31,7 @@ FOLDER_TO_INSPECT = 'F:\\els fotos 2019'
 FOLDER_TO_INSPECT = 'D:\\PhotosMoviesBackup\\Movies'
 FOLDER_TO_INSPECT = 'D:\\GoogleBackup\\WorkFolder\\Kids_20112023'
 FOLDER_TO_INSPECT = 'D:\\GoogleBackup\\WorkFolder\\FotosNoorVormsel'
-FOLDER_TO_INSPECT = 'D:\\GoogleBackup\\28122021'
+FOLDER_TO_INSPECT = 'D:\\GoogleBackup\\WorkFolder_11_2024'
 
 
 def print_hi(name):
@@ -131,7 +131,15 @@ class MyFileHandler:
                         print("Filenamedate [%s] " % str(filenameDate))
 
                     else:
-                        print("No filenamedate for [%s]" % theFile)
+
+                        match = re.search(r"(20[0-2][0-9]-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01]))", theFile)
+                        if match is not None:
+                            print("Found group [%s]" % match.group())
+                            filenameDate = datetime.strptime(match.group(), '%Y-%m-%d')
+                            print("Filenamedate [%s] " % str(filenameDate))
+
+                        else:
+                            print("No filenamedate for [%s]" % theFile)
 
                 ######################################
                 #Get Google json time
@@ -147,6 +155,9 @@ class MyFileHandler:
                 except Exception as e:
                     print("error during exif [%s]" % str(e))
 
+                #hack
+                if filenameDate is None and exifDateTime is None and googleJsonTime is None:
+                    filenameDate = datetime.strptime('1977-09-17', '%Y-%m-%d')
 
                 if filenameDate is not None:   
                     if (exifDateTime is None):
